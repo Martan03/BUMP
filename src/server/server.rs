@@ -71,7 +71,7 @@ impl Server {
         sender: &UnboundedSender<RecvMsg>,
         buffer: &mut Vec<u8>,
     ) {
-        let msg = match from_slice::<PlayMsg>(buffer) {
+        let msgs = match from_slice::<Vec<PlayMsg>>(buffer) {
             Ok(msg) => msg,
             Err(e) => {
                 buffer.clear();
@@ -81,11 +81,13 @@ impl Server {
         };
 
         buffer.clear();
-        let (res_sender, res_recv) = oneshot::channel();
-        sender.send(RecvMsg::new(msg, res_sender)).unwrap();
+        for msg in msgs {
+            let (res_sender, res_recv) = oneshot::channel();
+            sender.send(RecvMsg::new(msg, res_sender)).unwrap();
 
-        if let Ok(res) = res_recv.await {
-            stream.write_all(res.as_bytes()).await.unwrap();
+            if let Ok(res) = res_recv.await {
+                stream.write_all(res.as_bytes()).await.unwrap();
+            }
         }
     }
 }

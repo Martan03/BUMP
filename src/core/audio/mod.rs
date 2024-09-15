@@ -30,11 +30,14 @@ impl PlayState {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum PlayMsg {
     Play,
     Pause,
     PlayPause,
     Next,
     Prev,
+    Volume(f32),
+    Mute,
+    Shuffle,
 }

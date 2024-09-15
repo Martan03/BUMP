@@ -1,11 +1,11 @@
-use std::path::PathBuf;
-
 use tokio::sync::mpsc::UnboundedReceiver;
+
+use crate::server::RecvMsg;
 
 use super::{
     audio::{player::Player, PlayMsg},
+    config::Config,
     library::Library,
-    server::RecvMsg,
 };
 
 pub struct App {
@@ -17,7 +17,8 @@ pub struct App {
 impl App {
     /// Creates new [`App`]
     pub fn new(msg_queue: UnboundedReceiver<RecvMsg>) -> Self {
-        let lib = Library::load(&PathBuf::from("."));
+        let config = Config::load();
+        let lib = Library::load(&config);
         Self {
             player: Player::new(&lib),
             lib,
@@ -34,12 +35,15 @@ impl App {
 
     /// Handles message received from the server
     async fn handle_msg(&mut self, msg: RecvMsg) {
-        match msg.cmd {
-            PlayMsg::Play => _ = self.player.play(true),
-            PlayMsg::Pause => _ = self.player.play(false),
-            PlayMsg::PlayPause => todo!(),
-            PlayMsg::Prev => _ = self.player.prev(&self.lib, None),
-            PlayMsg::Next => _ = self.player.next(&self.lib, None),
-        }
+        _ = match msg.cmd {
+            PlayMsg::Play => self.player.play_pause(true),
+            PlayMsg::Pause => self.player.play_pause(false),
+            PlayMsg::PlayPause => self.player.play_pause(None),
+            PlayMsg::Prev => self.player.prev(&self.lib, None),
+            PlayMsg::Next => self.player.next(&self.lib, None),
+            PlayMsg::Volume(vol) => self.player.volume(vol),
+            PlayMsg::Mute => self.player.mute(None),
+            PlayMsg::Shuffle => Ok(self.player.shuffle()),
+        };
     }
 }

@@ -1,3 +1,4 @@
+use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -22,6 +23,23 @@ impl Playlist {
     pub fn current(mut self, id: usize) -> Self {
         self.current = Some(id);
         self
+    }
+
+    /// Shuffles the playlist
+    pub fn shuffle(&mut self) {
+        let id = self.current.map(|v| self.songs[v]);
+
+        let mut rng = rand::thread_rng();
+        self.songs.shuffle(&mut rng);
+
+        let Some(id) = id else {
+            return;
+        };
+
+        if let Some(cur) = self.songs.iter().position(|&x| x == id) {
+            self.songs.swap(cur, 0);
+            self.current = Some(0);
+        }
     }
 
     /// Sets current to the nth previous song and returns current

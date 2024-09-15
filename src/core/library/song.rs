@@ -38,32 +38,32 @@ impl Song {
     }
 
     /// Gets the song title
-    pub fn title(&self) -> &Option<String> {
+    pub fn _title(&self) -> &Option<String> {
         &self.title
     }
 
     /// Gets the artist of the song
-    pub fn artist(&self) -> &Option<String> {
+    pub fn _artist(&self) -> &Option<String> {
         &self.artist
     }
 
     /// Gets the album of the song
-    pub fn album(&self) -> &Option<String> {
+    pub fn _album(&self) -> &Option<String> {
         &self.album
     }
 
     /// Gets the release year of the song
-    pub fn year(&self) -> Option<i32> {
+    pub fn _year(&self) -> Option<i32> {
         self.year
     }
 
     /// Gets the duration of the song
-    pub fn length(&self) -> &Option<Duration> {
+    pub fn _length(&self) -> &Option<Duration> {
         &self.length
     }
 
     /// Gets the genre of the song
-    pub fn genre(&self) -> &Option<String> {
+    pub fn _genre(&self) -> &Option<String> {
         &self.genre
     }
 }

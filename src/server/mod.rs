@@ -1,11 +1,13 @@
 use tokio::sync::oneshot;
 
-use super::audio::PlayMsg;
-
+mod client;
 #[allow(clippy::module_inception)]
 mod server;
 
+pub use client::*;
 pub use server::*;
+
+use crate::core::audio::PlayMsg;
 
 /// Wraps the message received on the server and adds sender for the response
 pub struct RecvMsg {

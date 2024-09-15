@@ -1,11 +1,12 @@
 use std::{
+    fs::read_dir,
     ops::{Index, IndexMut},
     path::PathBuf,
 };
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::Error;
+use crate::{core::config::Config, error::Error};
 
 use super::Song;
 
@@ -15,22 +16,18 @@ pub struct Library {
 }
 
 impl Library {
-    /// Loads the library from given path (returns empty library on error)
-    pub fn load(path: &PathBuf) -> Library {
-        let mut lib = match std::fs::read_to_string(path) {
+    /// Loads the library (returns empty library on error)
+    pub fn load(config: &Config) -> Library {
+        let mut lib = match std::fs::read_to_string(config.lib_path()) {
             Ok(l) => serde_json::from_str::<Library>(&l).unwrap_or_default(),
             Err(_) => Library::default(),
         };
-        if let Ok(song) = Song::from_file(&PathBuf::from(
-            "/home/martan03/Music/OneRepublic - Human (Deluxe)/01 - Run.mp3",
-        )) {
-            lib.songs.push(song);
-        }
+        _ = lib.find(config);
         lib
     }
 
     /// Saves the library to the given path
-    pub fn save(&self, path: &PathBuf) -> Result<(), Error> {
+    pub fn _save(&self, path: &PathBuf) -> Result<(), Error> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
@@ -41,9 +38,42 @@ impl Library {
         Ok(())
     }
 
+    pub fn find(&mut self, config: &Config) -> Result<(), Error> {
+        self.songs = vec![];
+        for dir in config.dirs() {
+            self._find(config, &dir)?;
+        }
+        Ok(())
+    }
+
     /// Gets length of the library
     pub fn len(&self) -> usize {
         self.songs.len()
+    }
+}
+
+impl Library {
+    fn _find(&mut self, config: &Config, dir: &PathBuf) -> Result<(), Error> {
+        for entry in read_dir(dir)? {
+            let path = entry?.path();
+
+            if path.is_dir() && config.recursive_search() {
+                self._find(config, &path)?;
+                continue;
+            }
+
+            let Some(ext) = path.extension() else {
+                continue;
+            };
+            let ext = ext.to_string_lossy();
+            if !config.extensions().iter().any(|e| e == ext.as_ref()) {
+                continue;
+            }
+
+            let song = Song::from_file(&path)?;
+            self.songs.push(song);
+        }
+        Ok(())
     }
 }
 

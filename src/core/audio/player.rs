@@ -15,6 +15,8 @@ use super::PlayState;
 pub struct Player {
     playlist: Playlist,
     state: PlayState,
+    volume: f32,
+    mute: bool,
     sink: Sink,
     symph: SymphOptions,
 }
@@ -24,6 +26,8 @@ impl Player {
         let mut plr = Self {
             playlist: Playlist::new(0..lib.len()).current(0),
             state: PlayState::Paused,
+            volume: 1.0,
+            mute: false,
             sink: Default::default(),
             symph: Default::default(),
         };
@@ -31,11 +35,20 @@ impl Player {
         plr
     }
 
-    /// Sets playing state based on the given bool value
-    pub fn play(&mut self, play: bool) -> Result<(), Error> {
+    /// Toggles playback state when play None, else set it based on the value
+    pub fn play_pause<T>(&mut self, play: T) -> Result<(), Error>
+    where
+        T: Into<Option<bool>>,
+    {
+        let play = play.into().unwrap_or(!self.state.is_playing());
         self.sink.play(play)?;
         self.state = PlayState::play(play);
         Ok(())
+    }
+
+    /// Shuffles the current playlist
+    pub fn shuffle(&mut self) {
+        self.playlist.shuffle();
     }
 
     /// Plays previous nth song
@@ -56,6 +69,26 @@ impl Player {
     ) -> Result<(), Error> {
         let cur = self.playlist.next(num.unwrap_or(1));
         self.play_on(lib, cur)
+    }
+
+    /// Sets playback volume to given value
+    pub fn volume(&mut self, volume: f32) -> Result<(), Error> {
+        let volume = volume.clamp(0.0, 1.0);
+        self.sink.volume(volume)?;
+        self.volume = volume;
+        Ok(())
+    }
+
+    /// Mutes/unmutes the playback
+    pub fn mute<T>(&mut self, mute: T) -> Result<(), Error>
+    where
+        T: Into<Option<bool>>,
+    {
+        let mute: bool = mute.into().unwrap_or(!self.mute);
+        let volume = mute.then_some(0.0).unwrap_or(self.volume);
+        self.sink.volume(volume)?;
+        self.mute = mute;
+        Ok(())
     }
 }
 
