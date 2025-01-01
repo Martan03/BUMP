@@ -73,7 +73,7 @@ impl Player {
 
     /// Sets playback volume to given value
     pub fn volume(&mut self, volume: f32) -> Result<(), Error> {
-        let volume = volume.clamp(0.0, 1.0);
+        let volume = (volume * volume).clamp(0.0, 1.0);
         self.sink.volume(volume)?;
         self.volume = volume;
         Ok(())

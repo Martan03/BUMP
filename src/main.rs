@@ -1,7 +1,7 @@
 use core::app::App;
 use std::{net::Ipv4Addr, process};
 
-use args::Args;
+use args::args::Args;
 use error::Error;
 use server::{Client, Server};
 use termint::{enums::Color, widgets::StrSpanExtension};
@@ -20,7 +20,7 @@ fn main() {
 }
 
 fn run() -> Result<(), Error> {
-    let args = Args::parse(std::env::args())?;
+    let args = Args::parse(pareg::Pareg::args())?;
     if args.actions.is_empty() {
         run_app();
         return Ok(());

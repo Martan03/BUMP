@@ -36,11 +36,9 @@ impl App {
     /// Handles message received from the server
     async fn handle_msg(&mut self, msg: RecvMsg) {
         _ = match msg.cmd {
-            PlayMsg::Play => self.player.play_pause(true),
-            PlayMsg::Pause => self.player.play_pause(false),
-            PlayMsg::PlayPause => self.player.play_pause(None),
-            PlayMsg::Prev => self.player.prev(&self.lib, None),
-            PlayMsg::Next => self.player.next(&self.lib, None),
+            PlayMsg::Play(play) => self.player.play_pause(play),
+            PlayMsg::Prev(n) => self.player.prev(&self.lib, n),
+            PlayMsg::Next(n) => self.player.next(&self.lib, n),
             PlayMsg::Volume(vol) => self.player.volume(vol),
             PlayMsg::Mute => self.player.mute(None),
             PlayMsg::Shuffle => Ok(self.player.shuffle()),
